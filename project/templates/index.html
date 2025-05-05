@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Магазин</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style type="text/css">
+        /* Общие стили (могут не применяться, пока нет #column-left и #menu) */
+        #column-left {
+            margin-top: 165px;
+        }
+
+        #menu {
+            border-radius: 4px 4px 0 0;
+        }
+
+        #menu.menu2 .navbar-collapse {
+            display: block !important;
+        }
+    </style>
+
+    <style>
+        /* Стили для мобильного фильтра */
+        .product-filter-button {
+            display: none;
+        }
+
+        @media (max-width: 767px) {
+            #column-left {
+                display: block !important;
+            }
+
+            #column-left > * {
+                display: none !important;
+            }
+
+            #column-left .art6-filter {
+                display: block !important;
+            }
+
+            body.filter {
+                overflow: hidden;
+            }
+
+            body.filter::before {
+                content: "";
+                position: fixed;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.4);
+                z-index: 99998;
+            }
+
+            .product-filter-button {
+                display: block;
+                margin-bottom: 20px;
+            }
+
+            .product-filter-button a {
+                color: white;
+                font-size: 14px;
+                text-decoration: none;
+                background-color: #6f81bb;
+                cursor: pointer;
+                display: block;
+                width: 100%;
+                height: 30px;
+                line-height: 30px;
+                padding-left: 15px;
+            }
+            .product-filter-button a:hover {
+                background-color: #5f71ab;
+            }
+
+            .art6-filter {
+                position: fixed;
+                top: 0;
+                left: -100%;
+                z-index: 99999;
+                width: calc(100% - 40px);
+                max-width: 360px;
+                padding: 15px 15px;
+                background-color: white;
+                border-right: 1px solid #ccc;
+                margin-top: 0;
+                height: 100%;
+                overflow: auto;
+                -webkit-transition: 0.3s;
+                -moz-transition: 0.3s;
+                -ms-transition: 0.3s;
+                -o-transition: 0.3s;
+                transition: 0.3s;
+            }
+
+            .art6-filter.active {
+                left: 0;
+            }
+
+            .art6-filter__form-box__slider {
+                display: none;
+            }
+        }
+    </style> <style>
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+        }
+
+        .header-container h1 {
+            margin: 0;
+            flex-grow: 1;
+            text-align: center;
+            font-size: 1.5em;
+        }
+
+        .search-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            justify-content: center;
+        }
+
+        .search-container select {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+
+        .search-container input[type="text"] {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            flex-grow: 1;
+        }
+
+        .search-container button {
+            padding: 8px 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .contact-info {
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .contact-info p {
+            margin: 5px 0;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .navigation a {
+            display: inline-block;
+            padding: 8px 12px;
+            text-decoration: none;
+            color: #333;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin: 0 5px;
+        }
+
+        .navigation a:hover {
+            background-color: #ddd;
+        }
+
+        /* Стили для выпадающего списка "Личный кабинет" */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+            margin-left: 5px;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            padding: 8px 12px;
+            z-index: 1;
+            right: 0;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown-content a {
+            color: black;
+            padding: 8px 12px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #ddd;
+        }
+
+        /* Основной контейнер для контента */
+        .main-container {
+            display: flex;
+            /* Используем flexbox для разделения на колонки */
+            /* flex-direction: column; */
+            /*  Размещаем элементы по вертикали  */
+        }
+
+        /* Колонка категорий */
+        .categories-column {
+            width: 200px;
+            /* Задаем ширину колонки категорий */
+            padding: 10px;
+            border-right: 1px solid #ccc;
+            /* Разделительная линия */
+        }
+
+        .categories-column h2 {
+            margin-top: 0;
+        }
+
+        .categories-column ul {
+            list-style: none;
+            /* Убираем маркеры списка */
+            padding: 0;
+        }
+
+        .categories-column li {
+            margin-bottom: 5px;
+        }
+
+        .categories-column a {
+            text-decoration: none;
+            color: #007bff;
+            /* Цвет ссылок */
+        }
+
+        /* Dropdown стили для категорий */
+        .category-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .category-dropdown-content {
+            display: none;
+            /*position: absolute;*/
+            /* Удаляем absolute позиционирование */
+            position: relative;
+            /* Добавляем relative позиционирование */
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            padding: 0;
+            /* Убираем отступы, чтобы список прилегал к ссылке */
+            left: 100%;
+            /* Сдвигаем выпадающий список вправо */
+            top: 0;
+            /* Выравниваем по верху */
+        }
+
+        .category-dropdown:hover .category-dropdown-content {
+            display: block;
+        }
+
+        .category-dropdown-content a {
+            color: black;
+            padding: 8px 12px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .category-dropdown-content a:hover {
+            background-color: #ddd;
+        }
+        /* Колонка с контентом (баланс, список товаров и т.д.) */
+        .content-column {
+            flex-grow: 1;
+            /* Занимает все оставшееся пространство */
+            padding: 10px;
+            display: flex;
+            /* Добавляем flex для выравнивания изображений и блога */
+            /* flex-direction: column; */
+            /* Располагаем элементы по вертикали */
+            align-items: flex-start;
+            /* Выравниваем элементы по левому краю */
+            justify-content: space-between;
+            /* Размещаем элементы по краям */
+        }
+
+        /* Дополнительные стили для выпадающего списка и кнопки */
+        .search-container select, .search-container button {
+            font-size: 14px;
+        }
+
+        /* Стили для "Рекомендуемое" */
+        .recommended-container {
+            text-align: center;
+            margin-top: 20px;
+            overflow-x: auto;
+            /* Добавляем горизонтальную прокрутку */
+            padding-bottom: 10px;
+            /* Чтобы тень от элементов не обрезалась */
+        }
+
+        .recommended-grid {
+            display: flex;
+            flex-wrap: nowrap;
+            /* Запрещаем перенос на новую строку */
+            justify-content: flex-start;
+            /* Выравниваем элементы по левому краю */
+            gap: 20px;
+            /* Расстояние между ячейками */
+            padding: 20px;
+        }
+
+        .recommended-item {
+            width: 200px;
+            /* Ширина ячейки */
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: center;
+            flex-shrink: 0;
+            /* Запрещаем сжатие элементов */
+        }
+
+        .recommended-item img {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 10px;
+        }
+
+        .recommended-item h3 {
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .recommended-item p {
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .recommended-item button {
+            padding: 8px 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .recommended-item button:hover {
+            background-color: #0056b3;
+        }
+    /* Стили для блога */
+        .blog-container {
+            margin-top: 20px;
+            text-align: left;
+            /* Выравниваем текст слева */
+            align-self: flex-start;
+            /* Выравниваем блок "Блог" по верхнему краю колонки */
+        }
+
+        .blog-container h2 {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .blog-container ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .blog-container li {
+            margin-bottom: 5px;
+        }
+
+        .blog-container a {
+            text-decoration: none;
+            color: #333;
+        }
+
+        .blog-container a:hover {
+            color: #007bff;
+        }
+
+        /* Контейнер для изображений, чтобы центрировать их */
+        .image-container {
+            text-align: center;
+            margin-bottom: 20px;
+            /* Отступ между картинками и блоком "Блог" */
+            flex-grow: 1;
+            /* Занимает все доступное место по вертикали */
+            display: flex;
+            /* Используем flexbox для центрирования */
+            justify-content: center;
+            align-items: center;
+            /* Центрируем по вертикали */
+        }
+
+        .image-container img {
+            max-width: 90%;
+            /* Ограничиваем ширину картинки */
+            height: auto;
+            display: block;
+            /* Убираем отступ снизу у строчных элементов */
+            margin: 0 auto;
+            /* Центрируем по горизонтали */
+        }
+
+        /* Стиль для блока с новостью */
+        .blog-post {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+            text-align: left;
+        }
+
+        .blog-post img {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 5px;
+        }
+
+        .blog-post h3 {
+            font-size: 1em;
+            margin-bottom: 5px;
+        }
+
+        .blog-post p {
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .blog-post .read-more {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .blog-post .date {
+            font-size: 0.8em;
+            color: #777;
+        }
+
+         /* Стили для строки с информацией */
+        .info-row {
+            display: flex;
+            justify-content: space-around; /* Равномерное распределение */
+            align-items: center; /* Вертикальное выравнивание */
+            padding: 10px;
+            background-color: #f0f0f0; /* Светлый фон */
+            border-top: 1px solid #ccc; /* Верхняя граница */
+            margin-top: 20px; /* Отступ от "Рекомендуемое" */
+        }
+
+        .info-cell {
+            text-align: center;
+            width: 24%; /* Чтобы все 4 ячейки поместились */
+              display: flex; /*  Для выравнивания иконки и текста */
+            align-items: center; /*  Выравнивание по вертикали */
+            justify-content: center; /*  Выравнивание по горизонтали */
+            font-size: 14px;
+        }
+
+        .info-cell i {
+            margin-right: 5px; /*  Отступ между иконкой и текстом */
+            font-size: 20px; /*  Размер иконок */
+        }
+
+        /* Адаптивность для маленьких экранов (можно настроить) */
+        @media (max-width: 600px) {
+            .info-row {
+                flex-direction: column; /* Ячейки располагаются вертикально */
+            }
+            .info-cell {
+                width: 100%;
+                margin-bottom: 10px;
+                 justify-content: center; /* Центрирование */
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-container">
+        <h1>Продажа офисной мебели: стеллажи, шкафы, сейфы, ...</h1>
+        <div class="contact-info">
+            <p>Московская область</p>
+            <p> +7 (495) 768-96-08</p>
+            <p>По будням с 09:00 до 18:00</p>
+        </div>
+    </div>
+
+    <div class="search-container">
+        <form method="get" action="/">
+            <select id="category" name="category">
+                {% for value, label in categories %}
+                    <option value="{{ value }}" {% if category == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <input type="text" id="search" name="search" value="{{ search or '' }}" placeholder="Поиск товара...">
+            <button type="submit">Найти</button>
+        </form>
+    </div>
+
+    <div class="navigation">
+        <a href="/">Главная</a>
+        <a href="/about">О компании</a>
+        <a href="/delivery">Доставка и оплата</a>
+        <a href="/contacts">Контакты</a>
+        <div class="dropdown">
+            <a href="#">Личный кабинет</a>
+            <div class="dropdown-content">
+                <a href="/register">Регистрация</a>
+                <a href="/login">Авторизация</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div id="column-left" class="categories-column">
+            <!-- Добавлен ID для стилей -->
+            <button class="product-filter-button"><a href="#">Фильтр</a></button>
+            <div class="art6-filter">
+                <h2>Категории</h2>
+                <ul>
+                    <li class="category-dropdown">
+                        <a href="/?category=грузоподъемное оборудование">Грузоподъемное оборудование</a>
+                        <div class="category-dropdown-content">
+                            <a href="/?subcategory=домкраты">Домкраты</a>
+                            <a href="/?subcategory=лебедки_ручные_барабанные">Лебедки ручные барабанные</a>
+                            <a href="/?subcategory=лебедки_ручные_рычажные">Лебедки ручные рычажные</a>
+                            <a href="/?subcategory=лебедки_электрические">Лебедки электрические</a>
+                            <a href="/?subcategory=лента_текстильная">Лента текстильная</a>
+                            <a href="/?subcategory=стропы">Стропы</a>
+                            <a href="/?subcategory=тали_ручные">Тали ручные</a>
+                            <a href="/?subcategory=тали_электрические">Тали электрические</a>
+                        </div>
+                    </li>
+                    <li class="category-dropdown">
+                        <a href="/?category=колесные опоры">Колесные опоры</a>
+                        <div class="category-dropdown-content">
+                            <a href="/?subcategory=аппаратные_колёса">Аппаратные колёса</a>
+                            <a href="/?subcategory=большегрузные_нейлоновые">Большегрузные нейлоновые</a>
+                            <a href="/?subcategory=большегрузные_обрезиненные">Большегрузные обрезиненные</a>
+                            <a href="/?subcategory=большегрузные_полиуретановые">Большегрузные полиуретановые</a>
+                            <a href="/?subcategory=колеса_по_области_применения">Колеса по области применения</a>
+                            <a href="/?subcategory=нейлоновые">Нейлоновые</a>
+                            <a href="/?subcategory=пневматические_колёса">Пневматические колёса</a>
+                            <a href="/?subcategory=полиуретановые">Полиуретановые</a>
+                            <a href="/?subcategory=промышленные">Промышленные</a>
+                            <a href="/?subcategory=ролики_и_рулевые_колеса">Ролики и рулевые колеса</a>
+                            <a href="/?subcategory=сдвоенные_большегрузные_колёса">Сдвоенные большегрузные колёса</a>
+                            <a href="/?subcategory=синяя_резина">Синяя резина</a>
+                            <a href="/?subcategory=термостойкие">Термостойкие</a>
+                        </div>   </li>
+                    <li class="category-dropdown">
+                        <a href="/?category=складская техника">Складская техника</a>
+                        <div class="category-dropdown-content">
+                            <a href="/?subcategory=самоходные_тележки">Самоходные тележки</a>
+                            <a href="/?subcategory=тележки_гидравлические">Тележки гидравлические</a>
+                            <a href="/?subcategory=штабелеры">Штабелеры</a>
+                            <a href="/?subcategory=электрические_столы">Электрические столы</a>
+                        </div>
+                    </li>
+                    <li class="category-dropdown">
+                        <a href="/?category=строительное оборудование">Строительное оборудование</a>
+                        <div class="category-dropdown-content">
+                            <a href="/?subcategory=строительные_люльки">Строительные люльки</a>
+                            <a href="/?subcategory=строительные_подъемники">Строительные подъемники</a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="content-column">
+            <div class="image-container">
+                <img src="/static/images/картинка.jpg" alt="Доставка">
+            </div>
+
+            <div class="blog-container">
+                <h2>Блог</h2>
+                 <div class="blog-post">
+                    <img src="/static/images/полки.jpg" alt="Преимущества покупки готовых металлических стеллажей">
+                    <h3>Преимущества покупки готовых металлических стеллажей</h3>
+                    <p>Преимущества покупки готовых металлических стеллажей</p>
+                    <a href="#" class="read-more">Читать далее...</a>
+                    <p class="date">25.06.2020</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="recommended-container">
+        <h2>Рекомендуемое</h2>
+        <div class="recommended-grid">
+            <div class="recommended-item">
+                <img src="/static/images/товар 1.jpg" alt="Товар 1">
+                <h3>EM04 ZKZ 200 F</h3>
+                <p>1665 Р</p>
+                <button>Добавить в корзину</button>
+            </div>
+            <div class="recommended-item">
+                <img src="/static/images/товар 2.png" alt="Товар 2">
+                <h3>TSKRh 4.00-8 4 pr пневматическое</h3>
+                <p>Цена: 4 027 Р</p>
+                <button>Добавить в корзину</button>
+            </div>
+            <div class="recommended-item">
+                <img src="/static/images/товар 3.jpg" alt="Товар 3">
+                <h3>EM01 ZKZ 80</h3>
+                <p>302 H</p>
+                <button>Добавить в корзину</button>
+            </div>
+            <div class="recommended-item">
+                <img src="/static/images/товар 4.jpg" alt="Товар 4">
+                <h3>EM02 ZKZ 125</h3>
+                <p>362  Р</p>
+                <button>Добавить в корзину</button>
+            </div>
+            <div class="recommended-item">
+                <img src="/static/images/товар 5.jpg" alt="Товар 5">
+                <h3>Строительная люлька ZLP-500</h3>
+                <p>0 Р</p>
+                <button>Добавить в корзину</button>
+            </div>
+            <div class="recommended-item">
+                <img src="/static/images/товар 6.png" alt="Товар 6">
+                <h3>EM01 ZKZ 80 (INOX)</h3>
+                <p>963  Р</p>
+                <button>Добавить в корзину</button>
+            </div>
+            <div class="recommended-item">
+                <img src="/static/images/товар 7.jpg" alt="Товар 7">
+                <h3>Самоходный штабелер PROLIFT SDR 1035</h3>
+                <p>284 127  Р</p>
+                <button>Добавить в корзину</button>
+            </div>
+            <div class="recommended-item">
+                <img src="/static/images/товар 8.jpg" alt="Товар 8">
+                <h3>Электрический штабелер PROLIFT SPN 1535</h3>
+                <p>Цена: 148 523 Р</p>
+                <button>Добавить в корзину</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-cell">
+            <i class="fa fa-truck"></i>
+            Бесплатная доставка до транспортной компании при сумме заказа более 20 000 рублей
+        </div>
+        <div class="info-cell">
+            <i class="fa fa-thumbs-up"></i>
+            Опыт работы Продажа оборудования и мебели для магазинов и ресторанов с 1993 года
+        </div>
+        <div class="info-cell">
+            <i class="fa fa-globe"></i>
+            География Торговые залы в Москве, Новосибирске, Барнауле, Томске, Кемерово, Новокузнецке
+        </div>
+       <div class="info-cell">
+            <i class="fa fa-bullhorn"></i>
+            Акция Скидка 2% при оформлении заказа на сайте!
+        </div>
+    </div>
+
+    <script>
+        const filterButton = document.querySelector('.product-filter-button a');
+        const columnLeft = document.getElementById('column-left');
+        const body = document.body;
+
+        filterButton.addEventListener('click', function(event) {
+            event.preventDefault(); // Предотвращаем переход по ссылке
+            body.classList.toggle('filter');
+            columnLeft.querySelector('.art6-filter').classList.toggle('active');
+        });
+    </script>
+</body>
+</html>
